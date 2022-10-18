@@ -451,6 +451,247 @@ Tree : Cycle이 없는 연결된 그래프
 
         ==> 또한 정답이 된다.
 
+
+    알고리즘이 정답에 없는걸 추가했더니 모순이 생겼다 => 일어날 수 없는 일이다.(안생기는 케이스)
+
+## 3주차,4주차
+
+### Kruskal Algorithm
+
+MST 알고리즘, Prim과 매우 유사하지만 차이는 Prim은 근처에 있는 것 중에 작은걸 추가하며 넓혀가지만 Kruskal은
+
+중구난방으로 Edge가 추가가 된다.
+
+**크루스칼 선행 알고리즘**
+
+  그래프 알고리즘에 속하며
+  서로소 집합 알고리즘이라고도 한다.
+
+  - Union(합침)
+
+    값이 작은 쪽으로 부모를 바꿈.
+
+  - Find(탐색)
+
+    같은 부모를 가지고 있는지, 즉 같은 그룹에 속해있는지 알려주는 함수
+    
+    **재귀를 사용함.**
+
+    ```
+    package Kruskal;
+
+    public class Kruskal {
+
+      public static int getParent(int Parent[], int x) { // 재귀적으로 부모 노드를 찾음
+        if (Parent[x] == x) {
+          return x; // 자기 자신이 부모인경우
+        }
+        return Parent[x] = getParent(Parent, Parent[x]); // 자기 자신이 부모가 아닌 경우 재귀적 호출
+      }
+
+      public static void unionParent(int parent[], int a, int b) { // 두 부모 노드를 합침
+        a = getParent(parent, a);
+        b = getParent(parent, b);
+        if (a < b) { // 작은 쪽의 부모로 합치기
+          parent[b] = a;
+
+        } else {
+          parent[a] = b;
+        }
+      }
+
+      public static int findParent(int parent[], int a, int b) { // 같은 부모를 가지는지 확인
+        a = getParent(parent, a);
+        b = getParent(parent, b);
+        if (a == b) {
+          return 1; // 같은 부모
+        }
+        return 0; // 다른 부모
+      }
+
+      public static void main(String[] args) {
+        int[] parent = new int[11];
+        for (int i = 1; i <= 10; i++) { // 부모를 자기 자신의 갚으로 초기화
+          parent[i] = i;
+        }
+
+        unionParent(parent, 1, 2);
+        unionParent(parent, 2, 3);
+        unionParent(parent, 3, 4);
+        unionParent(parent, 5, 6);
+        unionParent(parent, 6, 7);
+        unionParent(parent, 7, 8);
+        System.out.print("1과 5는 연결되어 있나요 " + findParent(parent, 1, 5));
+      }
+        }
+    ```
+
+    Union-Find를 통해 어떤 덩어리당 번호가 생기고 구별이 가능하다.
+
+    노드에게 물어보면 어떤 덩어리에 속해있는지 매우 빠른 속도로 확인 가능
+
+    **==> 같은 덩어리에 속하면(같은 부모를 가지고 있으면) 연결하지 않는다.**
+
+- 정확성 증명(어렵다)
+
+    답이 여러개일 수 있고, 그 중에 하나를 찾는다.
+
+
+    - Invariant
+
+        **$T_{mst}$가 MST 중 한 트리라고 하자. Kruskal이 만들어가는 답 $T$가 항상 $T\subseteq T_{mst}$임을 보이면 됨(항상 유지)**
+
+    - Base : |T| = 0, 아무것도 안넣었을때는 공집합, 공집합은 당연히 부분집합 => OK
+
+    - Step : |T| = k(원소가 k개)일때, T<=$T_{mst}$
+    
+    
+    <img src="https://ifh.cc/g/q6O69g.png">
+
+    Alg이 한번의 선택 진행
+
+    $T'= T\cup\{e\}$
+
+    case 1: $T' \subseteq T_{mst}$일 경우 성립한다.
+
+    case 2: $T' \nsubseteq T_{mst}$일 경우, $e \notin T_{mst}$ 이다. ==> **다른 $T_{mst}$을 만족시킴을 보이면 된다.**
+
+    **이 경우, $e$를 포함한 유일한 Cycle이 존재한다.** ==> $T_{mst}\cup\{e\}$ 에 존재한다.
+
+    **Cycle에 e말고 not in T인 edge가 존재한다.**
+
+    그 중 하나 아무거나를 $e'$이라고 하자.
+
+    <img src="https://ifh.cc/g/lC6TGp.png">
+
+    1) W(e) < W(e')
+
+        $T{mst}$에서 $e$를 빼고 $e'$를 넣은 것이 더 좋은 답이다. => 모순
+
+    2) W(e) > W(e')
+
+        $e'$이 이미 T에 원소로 있었어야 함 ==> 모순
+
+        
+
+    3) W(e) == W(e')
+
+    
+        $T{mst}$ 에서 $e'$를 빼고 $e$를 더한 것도 정답이 된다.==> 또다른 $T{mst}$에 해당.
+
+    
+  
+### Prim과 Kruskal can find ANY Solution
+
+
+- Stable Sort Example
+
+    Sort시에 원래 순서가 유지되어야 한다.
+
+    <img src="https://ifh.cc/g/XFrSFQ.png">
+
+    답이 여러개일때 절대로 못 찾는 답이 있을수 있다.
+
+- Prim이든 Kruskal 이든 ANY(어떤) 답이든 찾을 수 있다. => 같은 입력에 대해서 정답이 여러개 인데 모든 답을 찾을 수 있다.
+
+    돌릴때 마다 답이 다름.
+
+
+- Proof(Prim에 대한 증명, Kruskal도 비슷)
+
+    - Prim 알고리즘에게 $T{mst}$를 정해서 찾으라고 한다.(Fix)
+
+    - T를 따라 답을 찾아가던 중 $T{mst}$에 속하지 않는 e를 넣었다 치면 ${e'}$을 찾게되고, e와 e'의 가중치가 같을때 아무거나 고르게 된다.
+
+    **Prim을 잘 조절하면 절대 못 찾는 답은 없다.**
+
+- 모든 Weight가 다르면 Solution이 하나 밖에 없다?
+
+    <img src="https://ifh.cc/g/JXnlas.png">
+
+    이 경우에 1,2를 포함하는 경우가 있으므로 둘다 답이 아니라는 것을 보일 수 있다.
+
+- **모든 Weight가 다르면 Kruskal은 유일한 답을 찾는다.** ==> option이 없기 때문(선택권이 없다).
+
+    모든 답을 찾을 수 있는데 Weight가 다르면 e, e' 둘중 선택하는 것 없이 유일한 답을 찾게 되므로 유일한 답을 찾는다.
+
+    
+### Dijkstra Algorithm
+
+여러 가지 버전이 있다. 어려움. 제대로 이해하고 있는 사람 별로 없음.
+
+
+- 노드마다 Shortest Path 길이만 찾는 버전
+
+    <많이 직관적이지 않아서 어려움>
+
+- 각 노드에 대해서 실제 Path까지 찾는 버전
+
+- Path가 여러개 있을수 있어서 그 여러개를 다 찾는 버전
+
+
+워낙 어려우니 다른 방향으로도 설명함()
+
+- As a Variation of BFS
+
+- Select from Nearest to Furthest
+
+    
+### Only length
+
+<img src="https://ifh.cc/g/0DKcpq.jpg">
+
+G : 그래프
+
+n : 노드 개수
+
+v(0) : 소스 노드
+
+$d{min}$ : 답
+
+<img src="https://ifh.cc/g/TOwkt6.png">
+
+한 놈에 대해서 Shortest Path 찾으면 다른놈에 대해서도 찾을 수 있음
+
+==> 소스가 하나일 때, 따라서 타겟을 하나로 정할 필요가 없다. 한 놈에 대해서 찾는 시간이나 다 찾는 시간이나 거의 비슷하다.
+
+V(0) 기준으로 Direct Edge(인접한 엣지)를 따라 잠정적인 답을 적은 다음에 그 답을 점점 더 정확한 답으로 바꿔나감.
+
+
+d(min) 값에다 넣는다.
+
+
+**빨간 애들은 답을 찾은 애들이다.**
+
+**파란 애들은 잠정적인 답을 가지고 있는 애들이다.(not in R)**
+
+시작 할때는 소스 노드만 Red이다. 
+
+**잠정적인 답 중 가장 작은것이 그대로 Red, 즉, 최종 답이 된다.**
+
+==> 15로 가는 또 다른 통로는 19를 거쳐와야 하는데 이미 19이므로 15보다 크므로 안되기 때문
+
+1) 파란색 중 가장 작은 값을 빨간색으로 바꾼다.
+
+2) 방금 바꾼 빨간색을 포함해 파란 애들을 업데이트 시킨다.
+
+<img src="https://ifh.cc/g/5wDTt2.jpg">
+
+**왜 파란색 중 가장 작은 값을 바로 빨간색으로 바꿔도 되는가?**
+
+
+귀류법으로 증명한다.
+
+빨간 것만 거쳐서 파란색으로 최종으로 오는 것이
+
+만약 15가 답이 아니라면(15보다 더 좋은 것이 있다면), 빨간 것에서 파란색으로 거쳐서 나오는 순간이 있고, 또 파란색으로 가는 순간이 반드시 있어야 한다. 
+
+
+
+
+
+
+
         
 
 
